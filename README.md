@@ -26,7 +26,7 @@ python3 -m pip install -r requirements.txt
 Run backend from project root:
 
 ```bash
-python3 -m uvicorn main:app --reload --app-dir /Users/ashokmore/projects/expense-tracker
+python3 -m uvicorn main:app --reload
 ```
 
 Backend URL: `http://127.0.0.1:8000`  
@@ -49,14 +49,14 @@ Use two terminals:
 Terminal 1 (backend):
 
 ```bash
-cd /Users/ashokmore/projects/expense-tracker
-python3 -m uvicorn main:app --reload --app-dir /Users/ashokmore/projects/expense-tracker
+cd expense-tracker
+python3 -m uvicorn main:app --reload
 ```
 
 Terminal 2 (frontend):
 
 ```bash
-cd /Users/ashokmore/projects/expense-tracker/frontend
+cd expense-tracker/frontend
 npm run dev
 ```
 

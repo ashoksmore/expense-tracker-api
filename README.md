@@ -1,25 +1,64 @@
-# Expense Tracker API
+# Expense Tracker
 
-Simple FastAPI project to create, list, fetch, and delete expenses using SQLite.
+Full-stack expense tracker with:
+
+- **Backend:** FastAPI + SQLAlchemy + SQLite
+- **Frontend:** React + Vite
 
 ## Requirements
 
 - Python 3.10+
-- pip
+- Node.js 18+ and npm
 
-## Setup
+## Project Structure
+
+- `main.py` - FastAPI backend entrypoint
+- `frontend/` - React frontend app
+
+## Backend Setup
+
+Install Python dependencies:
 
 ```bash
 python3 -m pip install -r requirements.txt
 ```
 
-## Run
+Run backend from project root:
 
 ```bash
-python3 -m uvicorn main:app --reload
+python3 -m uvicorn main:app --reload --app-dir /Users/ashokmore/projects/expense-tracker
 ```
 
-App runs at: `http://127.0.0.1:8000`
+Backend URL: `http://127.0.0.1:8000`  
+API docs: `http://127.0.0.1:8000/docs`
+
+## Frontend Setup
+
+```bash
+cd frontend
+npm install
+npm run dev
+```
+
+Frontend URL: `http://localhost:5173`
+
+## Run Both (Recommended)
+
+Use two terminals:
+
+Terminal 1 (backend):
+
+```bash
+cd /Users/ashokmore/projects/expense-tracker
+python3 -m uvicorn main:app --reload --app-dir /Users/ashokmore/projects/expense-tracker
+```
+
+Terminal 2 (frontend):
+
+```bash
+cd /Users/ashokmore/projects/expense-tracker/frontend
+npm run dev
+```
 
 ## API Endpoints
 
@@ -29,7 +68,7 @@ App runs at: `http://127.0.0.1:8000`
 - `GET /expenses/{expense_id}` - Get one expense by ID
 - `DELETE /expenses/{expense_id}` - Delete one expense by ID
 
-## Example JSON (Create Expense)
+## Example Request Body
 
 ```json
 {
@@ -39,8 +78,7 @@ App runs at: `http://127.0.0.1:8000`
 }
 ```
 
-## Quick Test
+## Notes
 
-Open docs in browser:
-
-- `http://127.0.0.1:8000/docs`
+- Backend CORS allows frontend origin: `http://localhost:5173`
+- If the frontend cannot call backend, ensure both apps are running and use `localhost:5173` for frontend.

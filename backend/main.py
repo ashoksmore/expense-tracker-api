@@ -1,10 +1,11 @@
-from fastapi import FastAPI, Depends, HTTPException
-from sqlalchemy.orm import Session
 from typing import List
-from fastapi.middleware.cors import CORSMiddleware
 
-from database import SessionLocal, engine
-import models, schemas
+from fastapi import Depends, FastAPI, HTTPException
+from fastapi.middleware.cors import CORSMiddleware
+from sqlalchemy.orm import Session
+
+from .database import SessionLocal, engine
+from . import models, schemas
 
 models.Base.metadata.create_all(bind=engine)
 
@@ -17,7 +18,8 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
-# Dependency
+
+
 def get_db():
     db = SessionLocal()
     try:
@@ -25,11 +27,12 @@ def get_db():
     finally:
         db.close()
 
+
 @app.get("/")
 def health_check():
     return {"status": "Expense Tracker API is running"}
 
-# Create Expense
+
 @app.post("/expenses", response_model=schemas.ExpenseResponse)
 def create_expense(expense: schemas.ExpenseCreate, db: Session = Depends(get_db)):
     db_expense = models.Expense(**expense.dict())
@@ -38,12 +41,12 @@ def create_expense(expense: schemas.ExpenseCreate, db: Session = Depends(get_db)
     db.refresh(db_expense)
     return db_expense
 
-# Get All Expenses
+
 @app.get("/expenses", response_model=List[schemas.ExpenseResponse])
 def get_expenses(db: Session = Depends(get_db)):
     return db.query(models.Expense).all()
 
-# Get Expense by ID
+
 @app.get("/expenses/{expense_id}", response_model=schemas.ExpenseResponse)
 def get_expense(expense_id: int, db: Session = Depends(get_db)):
     expense = db.query(models.Expense).filter(models.Expense.id == expense_id).first()
@@ -51,7 +54,7 @@ def get_expense(expense_id: int, db: Session = Depends(get_db)):
         raise HTTPException(status_code=404, detail="Expense not found")
     return expense
 
-# Delete Expense
+
 @app.delete("/expenses/{expense_id}")
 def delete_expense(expense_id: int, db: Session = Depends(get_db)):
     expense = db.query(models.Expense).filter(models.Expense.id == expense_id).first()

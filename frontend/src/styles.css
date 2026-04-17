@@ -1,0 +1,16 @@
+.container {
+    max-width: 500px;
+    margin: auto;
+    padding: 20px;
+    font-family: Arial, sans-serif;
+  }
+  
+  form input {
+    margin: 5px;
+    padding: 8px;
+  }
+  
+  button {
+    padding: 8px 12px;
+    cursor: pointer;
+  }

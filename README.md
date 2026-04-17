@@ -12,7 +12,7 @@ Full-stack expense tracker with:
 
 ## Project Structure
 
-- `main.py` - FastAPI backend entrypoint
+- `backend/` - FastAPI backend package
 - `frontend/` - React frontend app
 
 ## Backend Setup
@@ -26,7 +26,7 @@ python3 -m pip install -r requirements.txt
 Run backend from project root:
 
 ```bash
-python3 -m uvicorn main:app --reload
+python3 -m uvicorn backend.main:app --reload
 ```
 
 Backend URL: `http://127.0.0.1:8000`  
@@ -50,7 +50,7 @@ Terminal 1 (backend):
 
 ```bash
 cd expense-tracker
-python3 -m uvicorn main:app --reload
+python3 -m uvicorn backend.main:app --reload
 ```
 
 Terminal 2 (frontend):

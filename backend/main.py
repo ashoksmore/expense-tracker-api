@@ -3,13 +3,18 @@ from typing import List
 from fastapi import Depends, FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from sqlalchemy.orm import Session
+from .services.ai_categorizer import categorize_expense
 
 from .database import SessionLocal, engine
 from . import models, schemas
+from backend.routes.ai import router as ai_router
+
 
 models.Base.metadata.create_all(bind=engine)
 
 app = FastAPI(title="Expense Tracker API")
+
+app.include_router(ai_router, prefix="/api", tags=["AI"])
 
 app.add_middleware(
     CORSMiddleware,
@@ -33,14 +38,31 @@ def health_check():
     return {"status": "Expense Tracker API is running"}
 
 
+# @app.post("/expenses", response_model=schemas.ExpenseResponse)
+# def create_expense(expense: schemas.ExpenseCreate, db: Session = Depends(get_db)):
+#     db_expense = models.Expense(**expense.dict())
+#     db.add(db_expense)
+#     db.commit()
+#     db.refresh(db_expense)
+#     return db_expense
+
 @app.post("/expenses", response_model=schemas.ExpenseResponse)
 def create_expense(expense: schemas.ExpenseCreate, db: Session = Depends(get_db)):
-    db_expense = models.Expense(**expense.dict())
+    category = expense.category
+
+    if not category:
+        category = categorize_expense(expense.title)
+
+    db_expense = models.Expense(
+        title=expense.title,
+        amount=expense.amount,
+        category=category
+    )
+
     db.add(db_expense)
     db.commit()
     db.refresh(db_expense)
     return db_expense
-
 
 @app.get("/expenses", response_model=List[schemas.ExpenseResponse])
 def get_expenses(db: Session = Depends(get_db)):

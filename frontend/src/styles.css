@@ -1,16 +1,112 @@
 .container {
-    max-width: 500px;
-    margin: auto;
-    padding: 20px;
-    font-family: Arial, sans-serif;
+  max-width: 960px;
+  margin: 0 auto;
+  padding: 24px;
+  font-family: Inter, Arial, sans-serif;
+  color: #1f2937;
+}
+
+h1 {
+  margin-bottom: 16px;
+}
+
+form {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 18px;
+}
+
+form input {
+  margin: 0;
+  padding: 10px 12px;
+  border: 1px solid #d1d5db;
+  border-radius: 8px;
+}
+
+button {
+  padding: 10px 14px;
+  cursor: pointer;
+  border: none;
+  border-radius: 8px;
+  background: #185fa5;
+  color: #ffffff;
+}
+
+.dashboard-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 12px;
+  margin-bottom: 18px;
+}
+
+.dashboard-card {
+  background: #ffffff;
+  border: 1px solid #e5e7eb;
+  border-radius: 12px;
+  padding: 14px;
+}
+
+.card-label {
+  margin: 0 0 6px 0;
+  color: #6b7280;
+  font-size: 12px;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.card-value {
+  margin: 0;
+  font-size: 20px;
+  font-weight: 600;
+}
+
+.table-section {
+  background: #ffffff;
+  border: 1px solid #e5e7eb;
+  border-radius: 12px;
+  padding: 12px;
+  margin-bottom: 8px;
+}
+
+.table-header h2 {
+  margin: 0 0 10px 0;
+  font-size: 16px;
+}
+
+.table-wrap {
+  overflow-x: auto;
+}
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+th,
+td {
+  text-align: left;
+  padding: 10px 8px;
+  border-bottom: 1px solid #f0f0f0;
+  font-size: 14px;
+}
+
+th {
+  color: #6b7280;
+  font-weight: 600;
+}
+
+.empty-state {
+  margin: 6px 0;
+  color: #6b7280;
+  font-size: 14px;
+}
+
+@media (max-width: 900px) {
+  .dashboard-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
   }
-  
-  form input {
-    margin: 5px;
-    padding: 8px;
+
+  form {
+    flex-wrap: wrap;
   }
-  
-  button {
-    padding: 8px 12px;
-    cursor: pointer;
-  }
+}

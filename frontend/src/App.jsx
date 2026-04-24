@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { getExpenses, createExpense } from "./api";
+import AIPanel from "./components/AIPanel";
 import "./styles.css";
 
 function App() {
@@ -15,6 +16,7 @@ function App() {
     const response = await getExpenses();
     setExpenses(response.data);
   };
+  const fetchExpenses = loadExpenses;
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -55,6 +57,7 @@ function App() {
           </li>
         ))}
       </ul>
+      <AIPanel expenses={expenses} onExpenseAdded={fetchExpenses} />
     </div>
   );
 }

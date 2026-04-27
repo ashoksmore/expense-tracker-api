@@ -29,6 +29,36 @@ function App() {
     loadExpenses();
   };
 
+  const handleLoadDemoData = async () => {
+    const demoExpenses = [
+      { title: "Groceries - Whole Foods", amount: 96.45, category: "Food" },
+      { title: "Monthly Metro Pass", amount: 72.0, category: "Transport" },
+      { title: "Electricity Bill", amount: 58.2, category: "Utilities" },
+      { title: "Netflix Subscription", amount: 14.99, category: "Entertainment" },
+      { title: "Pharmacy", amount: 27.6, category: "Health" },
+      { title: "Dinner with friends", amount: 44.3, category: "Food" },
+      { title: "Online shopping", amount: 120.0, category: "Shopping" },
+      { title: "Apartment Rent", amount: 850.0, category: "Housing" },
+    ];
+
+    const existing = await getExpenses();
+    await Promise.all(
+      existing.data.map((expense) =>
+        fetch(`http://127.0.0.1:8000/expenses/${expense.id}`, { method: "DELETE" }),
+      ),
+    );
+    await Promise.all(
+      demoExpenses.map((expense) =>
+        createExpense({
+          title: expense.title,
+          amount: expense.amount,
+          category: expense.category,
+        }),
+      ),
+    );
+    loadExpenses();
+  };
+
   const totalSpend = expenses.reduce((sum, expense) => sum + Number(expense.amount || 0), 0);
   const averageExpense = expenses.length ? totalSpend / expenses.length : 0;
   const topCategoryTotals = expenses.reduce((acc, expense) => {
@@ -98,6 +128,9 @@ function App() {
       <section className="table-section">
         <div className="table-header">
           <h2>Recent Transactions</h2>
+          <button type="button" className="ghost-button" onClick={handleLoadDemoData}>
+            Load Demo Data
+          </button>
         </div>
         {sortedExpenses.length ? (
           <div className="table-wrap">

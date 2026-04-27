@@ -73,6 +73,21 @@ button {
   font-size: 16px;
 }
 
+.table-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+}
+
+.ghost-button {
+  background: #f8fafc;
+  color: #185fa5;
+  border: 1px solid #cfe2fb;
+  padding: 8px 10px;
+  font-size: 12px;
+}
+
 .table-wrap {
   overflow-x: auto;
 }

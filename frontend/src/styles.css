@@ -154,6 +154,14 @@ th {
   background: linear-gradient(90deg, #185fa5, #4f8ed1);
 }
 
+.bar-fill-danger {
+  background: linear-gradient(90deg, #d94848, #b91c1c);
+}
+
+.bar-fill-muted {
+  background: linear-gradient(90deg, #9ca3af, #6b7280);
+}
+
 .mini-chart {
   display: flex;
   align-items: flex-end;
@@ -190,6 +198,59 @@ th {
 .mini-value {
   font-size: 11px;
   color: #374151;
+}
+
+.budget-form {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 10px;
+  flex-wrap: wrap;
+}
+
+.budget-form input {
+  margin: 0;
+  padding: 9px 10px;
+  border: 1px solid #d1d5db;
+  border-radius: 8px;
+}
+
+.budget-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.budget-row {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.budget-track {
+  height: 12px;
+}
+
+.alert-list {
+  margin-bottom: 10px;
+}
+
+.alert-item {
+  margin: 0 0 6px 0;
+  font-size: 13px;
+  color: #991b1b;
+  background: #fef2f2;
+  border: 1px solid #fecaca;
+  border-radius: 8px;
+  padding: 7px 9px;
+}
+
+.inline-link-button {
+  align-self: flex-start;
+  border: 1px solid #e5e7eb;
+  background: #fff;
+  color: #4b5563;
+  padding: 5px 8px;
+  font-size: 11px;
 }
 
 @media (max-width: 900px) {

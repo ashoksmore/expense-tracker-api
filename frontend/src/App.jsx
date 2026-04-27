@@ -7,9 +7,23 @@ function App() {
   const [expenses, setExpenses] = useState([]);
   const [title, setTitle] = useState("");
   const [amount, setAmount] = useState("");
+  const [budgets, setBudgets] = useState({});
+  const [budgetCategory, setBudgetCategory] = useState("");
+  const [budgetAmount, setBudgetAmount] = useState("");
 
   useEffect(() => {
     loadExpenses();
+  }, []);
+
+  useEffect(() => {
+    const raw = window.localStorage.getItem("expenseBudgets");
+    if (!raw) return;
+    try {
+      const parsed = JSON.parse(raw);
+      setBudgets(parsed);
+    } catch {
+      setBudgets({});
+    }
   }, []);
 
   const loadExpenses = async () => {
@@ -81,9 +95,36 @@ function App() {
     .map(([month, amount]) => ({ month, amount: Number(amount) }))
     .sort((a, b) => new Date(`1 ${a.month}`).getTime() - new Date(`1 ${b.month}`).getTime());
   const maxMonthlyAmount = Math.max(...monthlySeries.map((item) => item.amount), 1);
+  const budgetRows = Object.keys({ ...topCategoryTotals, ...budgets })
+    .sort()
+    .map((category) => {
+      const spent = Number(topCategoryTotals[category] || 0);
+      const budget = Number(budgets[category] || 0);
+      const percent = budget > 0 ? Math.min(Math.round((spent / budget) * 100), 100) : 0;
+      return { category, spent, budget, percent };
+    });
+  const alerts = budgetRows.filter((row) => row.budget > 0 && row.spent > row.budget);
   const sortedExpenses = [...expenses].sort(
     (a, b) => new Date(b.created_at || 0).getTime() - new Date(a.created_at || 0).getTime(),
   );
+
+  const saveBudget = () => {
+    const category = budgetCategory.trim();
+    const amountValue = Number(budgetAmount);
+    if (!category || Number.isNaN(amountValue) || amountValue <= 0) return;
+    const next = { ...budgets, [category]: amountValue };
+    setBudgets(next);
+    window.localStorage.setItem("expenseBudgets", JSON.stringify(next));
+    setBudgetCategory("");
+    setBudgetAmount("");
+  };
+
+  const removeBudget = (category) => {
+    const next = { ...budgets };
+    delete next[category];
+    setBudgets(next);
+    window.localStorage.setItem("expenseBudgets", JSON.stringify(next));
+  };
 
   return (
     <div className="container">
@@ -212,6 +253,79 @@ function App() {
             <p className="empty-state">No monthly data yet.</p>
           )}
         </article>
+      </section>
+
+      <section className="table-section">
+        <div className="table-header">
+          <h2>Budget Tracking</h2>
+        </div>
+
+        <div className="budget-form">
+          <input
+            placeholder="Category (e.g. Food)"
+            value={budgetCategory}
+            onChange={(e) => setBudgetCategory(e.target.value)}
+          />
+          <input
+            placeholder="Monthly budget"
+            type="number"
+            value={budgetAmount}
+            onChange={(e) => setBudgetAmount(e.target.value)}
+          />
+          <button type="button" onClick={saveBudget}>
+            Save Budget
+          </button>
+        </div>
+
+        {alerts.length > 0 && (
+          <div className="alert-list">
+            {alerts.map((item) => (
+              <p key={item.category} className="alert-item">
+                Alert: {item.category} is over budget by ${(item.spent - item.budget).toFixed(2)}.
+              </p>
+            ))}
+          </div>
+        )}
+
+        {budgetRows.length ? (
+          <div className="budget-list">
+            {budgetRows.map((item) => (
+              <div key={item.category} className="budget-row">
+                <div className="bar-meta">
+                  <span>{item.category}</span>
+                  {item.budget > 0 ? (
+                    <strong>
+                      ${item.spent.toFixed(2)} / ${item.budget.toFixed(2)}
+                    </strong>
+                  ) : (
+                    <strong>${item.spent.toFixed(2)} / No budget</strong>
+                  )}
+                </div>
+                <div className="bar-track budget-track">
+                  {item.budget > 0 ? (
+                    <div
+                      className={`bar-fill ${item.spent > item.budget ? "bar-fill-danger" : ""}`}
+                      style={{ width: `${item.percent}%` }}
+                    />
+                  ) : (
+                    <div className="bar-fill bar-fill-muted" style={{ width: "100%" }} />
+                  )}
+                </div>
+                {item.budget > 0 && (
+                  <button
+                    type="button"
+                    className="inline-link-button"
+                    onClick={() => removeBudget(item.category)}
+                  >
+                    Remove Budget
+                  </button>
+                )}
+              </div>
+            ))}
+          </div>
+        ) : (
+          <p className="empty-state">No budget data yet. Add a budget to start tracking.</p>
+        )}
       </section>
 
       <AIPanel expenses={expenses} onExpenseAdded={fetchExpenses} />

@@ -42,6 +42,20 @@ npm run dev
 
 Frontend URL: `http://localhost:5173`
 
+## Screenshots
+
+App dashboard:
+
+![App dashboard](docs/screenshots/app-dashboard.png)
+
+Backend API docs:
+
+![Backend API docs](docs/screenshots/backend-api-docs.png)
+
+## Architecture Flow
+
+See `docs/flow-diagram.md` for a visual flow diagram (Mermaid).
+
 ## Run Both (Recommended)
 
 Use two terminals:

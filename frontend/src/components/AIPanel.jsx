@@ -9,14 +9,6 @@ const quickQuestions = [
   "How can I save money?",
 ];
 
-const panelStyle = {
-  background: "#fff",
-  border: "1px solid #e5e5e5",
-  borderRadius: "12px",
-  padding: "16px",
-  marginTop: "16px",
-};
-
 export default function AIPanel({ expenses, onExpenseAdded }) {
   const [activeTab, setActiveTab] = useState("parse");
   const [aiStatus, setAiStatus] = useState({
@@ -177,18 +169,14 @@ export default function AIPanel({ expenses, onExpenseAdded }) {
   void expenses;
 
   return (
-    <div style={panelStyle}>
-      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "12px" }}>
-        <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
-          <strong style={{ fontSize: "14px" }}>AI Assistant</strong>
+    <div className="ai-panel">
+      <div className="ai-panel__toolbar">
+        <div className="ai-panel__title-row">
+          <strong className="ai-panel__title">AI Assistant</strong>
           <span
-            style={{
-              fontSize: "11px",
-              borderRadius: "999px",
-              padding: "3px 8px",
-              background: aiStatus.connected ? "#e8f8ee" : "#fdecec",
-              color: aiStatus.connected ? "#166534" : "#991b1b",
-            }}
+            className={`ai-status ${
+              aiStatus.loading ? "ai-status--pending" : aiStatus.connected ? "ai-status--ok" : "ai-status--off"
+            }`}
           >
             {aiStatus.loading
               ? "Checking..."
@@ -201,37 +189,18 @@ export default function AIPanel({ expenses, onExpenseAdded }) {
                 : "Offline"}
           </span>
         </div>
-        <button
-          type="button"
-          onClick={refreshStatus}
-          style={{
-            border: "1px solid #d4d4d4",
-            background: "#f8f8f8",
-            color: "#333",
-            borderRadius: "8px",
-            padding: "6px 10px",
-            cursor: "pointer",
-          }}
-        >
+        <button type="button" className="ai-panel__btn-ghost" onClick={refreshStatus}>
           Refresh Status
         </button>
       </div>
 
-      <div style={{ display: "flex", gap: "8px", marginBottom: "12px", flexWrap: "wrap" }}>
+      <div className="ai-panel__tabs">
         {VALID_TABS.map((tab) => (
           <button
             key={tab}
             type="button"
+            className={`ai-tab${activeTab === tab ? " is-active" : ""}`}
             onClick={() => setActiveTab(tab)}
-            style={{
-              border: activeTab === tab ? "1px solid #185FA5" : "1px solid #dcdcdc",
-              background: activeTab === tab ? "#e9f2ff" : "#fff",
-              color: activeTab === tab ? "#185FA5" : "#555",
-              borderRadius: "999px",
-              padding: "6px 12px",
-              fontSize: "12px",
-              cursor: "pointer",
-            }}
           >
             {tab === "parse" ? "Natural Language Entry" : tab === "insights" ? "Ask Insights" : "Monthly Summary"}
           </button>
@@ -240,64 +209,37 @@ export default function AIPanel({ expenses, onExpenseAdded }) {
 
       {activeTab === "parse" && (
         <div>
-          <div style={{ display: "flex", gap: "8px", marginBottom: "10px" }}>
+          <div className="ai-panel__row">
             <input
+              type="text"
               placeholder="e.g. spent $12 on lunch with team"
               value={nlInput}
               onChange={(e) => setNlInput(e.target.value)}
               onKeyDown={(e) => e.key === "Enter" && handleParseExpense()}
-              style={{ flex: 1, padding: "8px 10px", border: "1px solid #dcdcdc", borderRadius: "8px" }}
             />
             <button type="button" onClick={handleParseExpense} disabled={parsing}>
               {parsing ? "Parsing..." : "Parse"}
             </button>
           </div>
-          {parseError && <p style={{ color: "#b91c1c", fontSize: "12px", margin: "0 0 10px 0" }}>{parseError}</p>}
+          {parseError && <p className="ai-error">{parseError}</p>}
 
           {parsedExpense && (
-            <div
-              style={{
-                background: "#f0f7ff",
-                border: "1px solid #b3d4ff",
-                borderRadius: "8px",
-                padding: "12px",
-                fontSize: "13px",
-              }}
-            >
+            <div className="ai-parse-card">
               <div style={{ marginBottom: "8px" }}>
                 <strong>{parsedExpense.title}</strong>
               </div>
               <div style={{ marginBottom: "8px" }}>${Number(parsedExpense.amount || 0).toFixed(2)}</div>
-              <span
-                style={{
-                  display: "inline-block",
-                  background: "#e6eef8",
-                  color: "#185FA5",
-                  borderRadius: "999px",
-                  padding: "3px 9px",
-                  fontSize: "12px",
-                  marginBottom: "10px",
-                }}
-              >
-                {parsedExpense.category || "Other"}
-              </span>
-              <div style={{ display: "flex", gap: "8px", flexWrap: "wrap" }}>
+              <span className="ai-pill">{parsedExpense.category || "Other"}</span>
+              <div className="ai-panel__actions">
                 <button type="button" onClick={handleConfirmExpense}>
                   Add Expense
                 </button>
                 <button
                   type="button"
+                  className="ai-btn-secondary"
                   onClick={() => {
                     setNlInput(parsedExpense.title || "");
                     setParsedExpense(null);
-                  }}
-                  style={{
-                    border: "1px solid #cfcfcf",
-                    background: "#f3f3f3",
-                    color: "#333",
-                    borderRadius: "8px",
-                    padding: "8px 12px",
-                    cursor: "pointer",
                   }}
                 >
                   Edit
@@ -310,23 +252,15 @@ export default function AIPanel({ expenses, onExpenseAdded }) {
 
       {activeTab === "insights" && (
         <div>
-          <div style={{ display: "flex", gap: "8px", flexWrap: "wrap", marginBottom: "10px" }}>
+          <div className="ai-panel__row ai-panel__row--chips">
             {quickQuestions.map((chip) => (
               <button
                 key={chip}
                 type="button"
+                className="ai-chip"
                 onClick={() => {
                   setQuestion(chip);
                   handleInsight(chip);
-                }}
-                style={{
-                  border: "1px solid #d5e2f5",
-                  background: "#f4f8ff",
-                  color: "#185FA5",
-                  borderRadius: "999px",
-                  padding: "6px 10px",
-                  fontSize: "12px",
-                  cursor: "pointer",
                 }}
               >
                 {chip}
@@ -334,97 +268,54 @@ export default function AIPanel({ expenses, onExpenseAdded }) {
             ))}
           </div>
 
-          <div style={{ display: "flex", gap: "8px" }}>
+          <div className="ai-panel__row">
             <input
+              type="text"
               placeholder="Ask a question about your spending"
               value={question}
               onChange={(e) => setQuestion(e.target.value)}
-              style={{ flex: 1, padding: "8px 10px", border: "1px solid #dcdcdc", borderRadius: "8px" }}
             />
             <button type="button" onClick={() => handleInsight()}>
               Ask
             </button>
           </div>
-          {insightLoading && (
-            <div style={{ marginTop: "10px", color: "#777", fontStyle: "italic", fontSize: "13px" }}>
-              Analyzing your expenses...
-            </div>
-          )}
-          {insightError && <p style={{ color: "#b91c1c", fontSize: "12px", marginTop: "10px" }}>{insightError}</p>}
-          {insight && !insightLoading && (
-            <div
-              style={{
-                marginTop: "10px",
-                background: "#f5f5f5",
-                borderRadius: "8px",
-                padding: "12px",
-                fontSize: "13px",
-              }}
-            >
-              {insight}
-            </div>
-          )}
+          {insightLoading && <div className="ai-muted">Analyzing your expenses...</div>}
+          {insightError && <p className="ai-error">{insightError}</p>}
+          {insight && !insightLoading && <div className="ai-insight-box">{insight}</div>}
         </div>
       )}
 
       {activeTab === "summary" && (
         <div>
-          <button type="button" onClick={handleSummary} style={{ marginBottom: "10px" }}>
+          <button type="button" className="ai-summary-trigger" onClick={handleSummary}>
             Generate Summary
           </button>
 
-          {summaryLoading && <div style={{ fontSize: "13px", color: "#666" }}>Generating...</div>}
-          {summaryError && <p style={{ color: "#b91c1c", fontSize: "12px" }}>{summaryError}</p>}
-          {summary && !summaryLoading && (
-            <blockquote
-              style={{
-                margin: 0,
-                borderLeft: "3px solid #185FA5",
-                paddingLeft: "12px",
-                fontSize: "13px",
-                lineHeight: 1.7,
-                color: "#333",
-              }}
-            >
-              {summary}
-            </blockquote>
-          )}
+          {summaryLoading && <div className="ai-generating">Generating...</div>}
+          {summaryError && <p className="ai-error">{summaryError}</p>}
+          {summary && !summaryLoading && <blockquote className="ai-blockquote">{summary}</blockquote>}
 
-          <div style={{ marginTop: "14px", display: "flex", gap: "8px" }}>
+          <div className="ai-panel__row" style={{ marginTop: "14px" }}>
             <input
+              type="text"
               placeholder="Type expense title for category suggestion"
               value={categoryInput}
               onChange={(e) => setCategoryInput(e.target.value)}
-              style={{ flex: 1, padding: "8px 10px", border: "1px solid #dcdcdc", borderRadius: "8px" }}
             />
             <button type="button" onClick={handleSuggestCategory} disabled={categoryLoading}>
               {categoryLoading ? "Checking..." : "Suggest Category"}
             </button>
           </div>
-          {categoryError && <p style={{ color: "#b91c1c", fontSize: "12px", marginTop: "8px" }}>{categoryError}</p>}
+          {categoryError && <p className="ai-error" style={{ marginTop: "8px" }}>{categoryError}</p>}
           {suggestedCategory && (
-            <div style={{ marginTop: "8px", fontSize: "13px", color: "#333" }}>
+            <div className="ai-result">
               Suggested category: <strong>{suggestedCategory}</strong>
             </div>
           )}
         </div>
       )}
 
-      {toast && (
-        <div
-          style={{
-            marginTop: "12px",
-            border: "1px solid #bbf7d0",
-            background: "#f0fdf4",
-            color: "#166534",
-            borderRadius: "8px",
-            fontSize: "12px",
-            padding: "8px 10px",
-          }}
-        >
-          {toast}
-        </div>
-      )}
+      {toast && <div className="ai-toast">{toast}</div>}
     </div>
   );
 }

@@ -19,7 +19,12 @@ const panelStyle = {
 
 export default function AIPanel({ expenses, onExpenseAdded }) {
   const [activeTab, setActiveTab] = useState("parse");
-  const [aiStatus, setAiStatus] = useState({ loading: true, connected: false, model: "llama3.2" });
+  const [aiStatus, setAiStatus] = useState({
+    loading: true,
+    connected: false,
+    model: "llama3.2",
+    provider: null,
+  });
 
   const [nlInput, setNlInput] = useState("");
   const [parsing, setParsing] = useState(false);
@@ -57,13 +62,17 @@ export default function AIPanel({ expenses, onExpenseAdded }) {
     try {
       const response = await fetch(`${API_BASE}/api/ai/status`);
       const result = await response.json();
+      const connected =
+        Boolean(result.ollama_connected) ||
+        (result.provider === "groq" && Boolean(result.ready));
       setAiStatus({
         loading: false,
-        connected: Boolean(result.ollama_connected),
+        connected,
         model: result.model || "llama3.2",
+        provider: result.provider ?? null,
       });
     } catch {
-      setAiStatus({ loading: false, connected: false, model: "llama3.2" });
+      setAiStatus({ loading: false, connected: false, model: "llama3.2", provider: null });
     }
   };
 
@@ -181,7 +190,15 @@ export default function AIPanel({ expenses, onExpenseAdded }) {
               color: aiStatus.connected ? "#166534" : "#991b1b",
             }}
           >
-            {aiStatus.loading ? "Checking..." : aiStatus.connected ? `Online (${aiStatus.model})` : "Offline"}
+            {aiStatus.loading
+              ? "Checking..."
+              : aiStatus.connected
+                ? aiStatus.provider === "groq"
+                  ? `Online (Groq · ${aiStatus.model})`
+                  : aiStatus.provider === "ollama"
+                    ? `Online (Ollama · ${aiStatus.model})`
+                    : `Online (${aiStatus.model})`
+                : "Offline"}
           </span>
         </div>
         <button

@@ -3,6 +3,8 @@ load_dotenv()
 
 from typing import List
 
+import os
+
 from fastapi import Depends, FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from sqlalchemy.orm import Session
@@ -21,7 +23,14 @@ app.include_router(ai_router, prefix="/api", tags=["AI"])
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:5173"],
+    allow_origins=[
+        o.strip()
+        for o in os.getenv(
+            "CORS_ALLOW_ORIGINS",
+            "http://localhost:5173",
+        ).split(",")
+        if o.strip()
+    ],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],

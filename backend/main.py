@@ -8,6 +8,7 @@ import os
 from fastapi import Depends, FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from sqlalchemy.orm import Session
+from .core.expense_categories import EXPENSE_CATEGORIES
 from .services.ai_categorizer import categorize_expense
 
 from .database import SessionLocal, engine
@@ -48,6 +49,11 @@ def get_db():
 @app.get("/")
 def health_check():
     return {"status": "Expense Tracker API is running"}
+
+
+@app.get("/categories")
+def list_expense_categories():
+    return {"categories": EXPENSE_CATEGORIES}
 
 
 # @app.post("/expenses", response_model=schemas.ExpenseResponse)

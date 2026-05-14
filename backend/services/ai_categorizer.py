@@ -10,18 +10,9 @@ except ImportError:
 if openai is not None:
     openai.api_key = os.getenv("OPENAI_API_KEY")
 
-ALLOWED_CATEGORIES = [
-    "Food",
-    "Transport",
-    "Groceries",
-    "Utilities",
-    "Entertainment",
-    "Travel",
-    "Health",
-    "Work",
-    "Other",
-    "basic"
-]
+from backend.core.expense_categories import EXPENSE_CATEGORIES
+
+ALLOWED_CATEGORIES = EXPENSE_CATEGORIES
 
 SYSTEM_PROMPT = """
 You are a financial assistant.

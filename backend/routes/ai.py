@@ -12,6 +12,7 @@ from pydantic import BaseModel
 from sqlalchemy.orm import Session
 
 from backend.core.analytics import compute_spending_summary
+from backend.core.expense_categories import EXPENSE_CATEGORIES
 from backend.database import get_db
 
 router = APIRouter(prefix="/ai", tags=["ai"])
@@ -19,16 +20,7 @@ router = APIRouter(prefix="/ai", tags=["ai"])
 OLLAMA_URL = "http://localhost:11434/api/generate"
 OLLAMA_MODEL = os.getenv("OLLAMA_MODEL", "llama3.2")
 
-VALID_CATEGORIES = {
-    "Food",
-    "Transport",
-    "Shopping",
-    "Entertainment",
-    "Health",
-    "Housing",
-    "Utilities",
-    "Other",
-}
+VALID_CATEGORIES = frozenset(EXPENSE_CATEGORIES)
 
 
 class ParseRequest(BaseModel):
@@ -123,12 +115,12 @@ async def ai_status():
 
 @router.post("/parse-expense")
 def parse_expense(request: ParseRequest):
+    category_options = ", ".join(EXPENSE_CATEGORIES)
     prompt = (
         "You are an expense parser. Extract expense details from natural language.\n"
         "Return ONLY valid JSON with exactly these keys:\n"
         "title (string), amount (float), category (string).\n"
-        "Category must be one of: Food, Transport, Shopping,\n"
-        "Entertainment, Health, Housing, Utilities, Other.\n"
+        f"Category must be one of: {category_options}.\n"
         "If amount not found, use 0.\n"
         "No explanation, no markdown, just the JSON object."
         f"\n\nText to parse: {request.text}"
@@ -195,10 +187,11 @@ def get_monthly_summary(db: Session = Depends(get_db)):
 
 @router.post("/suggest-category")
 def suggest_category(request: CategoryRequest):
+    category_options = ", ".join(EXPENSE_CATEGORIES)
     prompt = (
         "You are an expense categorizer. Given this expense title,\n"
         "respond with ONLY one word - the best category from this list:\n"
-        "Food, Transport, Shopping, Entertainment, Health, Housing, Utilities, Other.\n"
+        f"{category_options}.\n"
         "No explanation. One word only.\n"
         f"Expense title: {request.title}"
     )

@@ -97,7 +97,7 @@ export default function AIPanel({ expenses, onExpenseAdded }) {
         body: JSON.stringify({
           title: parsedExpense.title,
           amount: parsedExpense.amount,
-          category: parsedExpense.category,
+          category: parsedExpense.category || "Other",
         }),
       });
       const result = await response.json();

@@ -73,6 +73,7 @@ npm run dev
 ## API Endpoints
 
 - `GET /` - Health check
+- `GET /categories` - List allowed expense category labels (for the add-expense form)
 - `POST /expenses` - Create an expense
 - `GET /expenses` - List all expenses
 - `GET /expenses/{expense_id}` - Get one expense by ID
@@ -87,6 +88,8 @@ npm run dev
   "category": "Food"
 }
 ```
+
+Use `GET /categories` for the current list. The web UI always sends a category from that list (defaults to **Other**).
 
 ## Notes
 

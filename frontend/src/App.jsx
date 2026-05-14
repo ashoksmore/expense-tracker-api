@@ -1,14 +1,15 @@
 import { useEffect, useState } from "react";
 import { getExpenses, getExpenseCategories, createExpense } from "./api";
 import AIPanel from "./components/AIPanel";
+import { EXPENSE_CATEGORIES as DEFAULT_CATEGORY_OPTIONS } from "./expenseCategories";
 import "./styles.css";
 
 function App() {
   const [expenses, setExpenses] = useState([]);
   const [title, setTitle] = useState("");
   const [amount, setAmount] = useState("");
-  const [category, setCategory] = useState("");
-  const [categoryOptions, setCategoryOptions] = useState([]);
+  const [category, setCategory] = useState("Other");
+  const [categoryOptions, setCategoryOptions] = useState(DEFAULT_CATEGORY_OPTIONS);
   const [budgets, setBudgets] = useState({});
   const [budgetCategory, setBudgetCategory] = useState("");
   const [budgetAmount, setBudgetAmount] = useState("");
@@ -22,11 +23,12 @@ function App() {
     (async () => {
       try {
         const res = await getExpenseCategories();
-        if (!cancelled && Array.isArray(res.data?.categories)) {
+        if (!cancelled && Array.isArray(res.data?.categories) && res.data.categories.length) {
           setCategoryOptions(res.data.categories);
+          setCategory((c) => (res.data.categories.includes(c) ? c : "Other"));
         }
       } catch {
-        if (!cancelled) setCategoryOptions([]);
+        /* keep DEFAULT_CATEGORY_OPTIONS */
       }
     })();
     return () => {
@@ -53,15 +55,14 @@ function App() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    const payload = {
+    await createExpense({
       title,
       amount: parseFloat(amount),
-    };
-    if (category.trim()) payload.category = category.trim();
-    await createExpense(payload);
+      category: category.trim(),
+    });
     setTitle("");
     setAmount("");
-    setCategory("");
+    setCategory("Other");
     loadExpenses();
   };
 
@@ -173,8 +174,8 @@ function App() {
           aria-label="Category"
           value={category}
           onChange={(e) => setCategory(e.target.value)}
+          required
         >
-          <option value="">Auto-detect from title</option>
           {categoryOptions.map((name) => (
             <option key={name} value={name}>
               {name}

@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { getExpenses, createExpense } from "./api";
+import { getExpenses, getExpenseCategories, createExpense } from "./api";
 import AIPanel from "./components/AIPanel";
 import "./styles.css";
 
@@ -7,12 +7,31 @@ function App() {
   const [expenses, setExpenses] = useState([]);
   const [title, setTitle] = useState("");
   const [amount, setAmount] = useState("");
+  const [category, setCategory] = useState("");
+  const [categoryOptions, setCategoryOptions] = useState([]);
   const [budgets, setBudgets] = useState({});
   const [budgetCategory, setBudgetCategory] = useState("");
   const [budgetAmount, setBudgetAmount] = useState("");
 
   useEffect(() => {
     loadExpenses();
+  }, []);
+
+  useEffect(() => {
+    let cancelled = false;
+    (async () => {
+      try {
+        const res = await getExpenseCategories();
+        if (!cancelled && Array.isArray(res.data?.categories)) {
+          setCategoryOptions(res.data.categories);
+        }
+      } catch {
+        if (!cancelled) setCategoryOptions([]);
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
   }, []);
 
   useEffect(() => {
@@ -34,12 +53,15 @@ function App() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    await createExpense({
+    const payload = {
       title,
       amount: parseFloat(amount),
-    });
+    };
+    if (category.trim()) payload.category = category.trim();
+    await createExpense(payload);
     setTitle("");
     setAmount("");
+    setCategory("");
     loadExpenses();
   };
 
@@ -127,10 +149,13 @@ function App() {
   };
 
   return (
-    <div className="container">
-      <h1>Expense Tracker</h1>
+    <div className="app">
+      <header className="app-header">
+        <h1>Expense Tracker</h1>
+        <p className="app-subtitle">Track spending, budgets, and AI-powered insights.</p>
+      </header>
 
-      <form onSubmit={handleSubmit}>
+      <form className="entry-form" onSubmit={handleSubmit}>
         <input
           placeholder="Expense title"
           value={title}
@@ -144,6 +169,18 @@ function App() {
           onChange={(e) => setAmount(e.target.value)}
           required
         />
+        <select
+          aria-label="Category"
+          value={category}
+          onChange={(e) => setCategory(e.target.value)}
+        >
+          <option value="">Auto-detect from title</option>
+          {categoryOptions.map((name) => (
+            <option key={name} value={name}>
+              {name}
+            </option>
+          ))}
+        </select>
         <button>Add Expense</button>
       </form>
 

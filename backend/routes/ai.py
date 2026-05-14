@@ -60,7 +60,7 @@ class CategoryRequest(BaseModel):
 #             detail="AI service unavailable. Is Ollama running? Run: ollama serve",
 #         ) from exc
 
-async def ask_llm(prompt: str) -> str:
+def ask_llm(prompt: str) -> str:
     if AI_PROVIDER == "groq":
         try:
             client = Groq(api_key=GROQ_API_KEY)
@@ -74,23 +74,51 @@ async def ask_llm(prompt: str) -> str:
             raise HTTPException(status_code=503, detail=f"Groq error: {str(e)}")
     else:
         try:
-            async with httpx.AsyncClient(timeout=30.0) as client:
-                response = await client.post(
-                    OLLAMA_URL,
-                    json={"model": OLLAMA_MODEL, "prompt": prompt, "stream": False}
-                )
-                return response.json()["response"].strip()
-        except httpx.ConnectError:
-            raise HTTPException(status_code=503, detail="Ollama not running. Run: ollama serve")
+            response = httpx.post(
+                OLLAMA_URL,
+                json={"model": OLLAMA_MODEL, "prompt": prompt, "stream": False},
+                timeout=30.0,
+            )
+            response.raise_for_status()
+            return str(response.json().get("response", "")).strip()
+        except httpx.ConnectError as exc:
+            raise HTTPException(
+                status_code=503,
+                detail="Ollama not running. Run: ollama serve",
+            ) from exc
+        except Exception as exc:
+            raise HTTPException(
+                status_code=503,
+                detail="AI service unavailable. Is Ollama running? Run: ollama serve",
+            ) from exc
     
 @router.get("/status")
-def ai_status():
-    try:
-        response = httpx.get("http://127.0.0.1:11434/api/tags", timeout=5.0)
-        response.raise_for_status()
-        return {"ollama_connected": True, "model": OLLAMA_MODEL}
-    except Exception:
-        return {"ollama_connected": False, "model": OLLAMA_MODEL}
+async def ai_status():
+    if AI_PROVIDER == "groq":
+        return {
+            "provider": "groq",
+            "model": GROQ_MODEL,
+            "ready": bool(GROQ_API_KEY),
+            "ollama_connected": False,
+        }
+    else:
+        try:
+            async with httpx.AsyncClient(timeout=5.0) as client:
+                response = await client.get("http://localhost:11434/api/tags")
+                models = [m["name"] for m in response.json().get("models", [])]
+                return {
+                    "provider": "ollama",
+                    "model": OLLAMA_MODEL,
+                    "ollama_connected": True,
+                    "models_available": models,
+                }
+        except:
+            return {
+                "provider": "ollama",
+                "model": OLLAMA_MODEL,
+                "ollama_connected": False,
+                "fix": "Run: ollama serve",
+            }
 
 
 @router.post("/parse-expense")

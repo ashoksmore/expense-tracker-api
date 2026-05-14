@@ -10,13 +10,13 @@ Full-stack expense tracker: log spending by category, optional local budgets wit
 
 ![Expense Tracker dashboard](screenshots/dashboard.png)
 
+**AI assistant** — parse natural language, insights, monthly summary, category tools.
+
+![AI assistant panel](screenshots/ai-assistant.png)
+
 **OpenAPI docs** — same REST contract as production (`/docs` on the API).
 
 ![FastAPI interactive docs](screenshots/api-docs.png)
-
-**AI assistant** — parse natural language, insights, monthly summary, category tools (replace `screenshots/ai-assistant.png` with your capture).
-
-![AI assistant panel](screenshots/ai-assistant.png)
 
 ---
 
@@ -133,5 +133,5 @@ cd frontend && npm install && npm run dev
 
 - `backend/` — FastAPI, models, categories, AI routes
 - `frontend/` — Vite + React SPA
-- `screenshots/` — PNGs for this README (`dashboard.png`, `api-docs.png`, `ai-assistant.png` — **replace the AI image** when you have a real capture)
+- `screenshots/` — PNGs for this README (`dashboard.png`, `ai-assistant.png`, `api-docs.png`)
 - [`docs/flow-diagram.md`](docs/flow-diagram.md) — same Mermaid as above (handy when browsing the `docs/` folder)

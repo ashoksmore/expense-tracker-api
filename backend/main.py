@@ -19,8 +19,6 @@ models.Base.metadata.create_all(bind=engine)
 
 app = FastAPI(title="Expense Tracker API")
 
-app.include_router(ai_router, prefix="/api", tags=["AI"])
-
 app.add_middleware(
     CORSMiddleware,
     allow_origins=[
@@ -35,6 +33,8 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+app.include_router(ai_router, prefix="/api", tags=["AI"])
 
 
 def get_db():

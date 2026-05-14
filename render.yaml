@@ -9,6 +9,9 @@ services:
         value: groq
       - key: GROQ_API_KEY
         sync: false
+      # Comma-separated browser origins allowed to call this API (your static site URL).
+      - key: CORS_ALLOW_ORIGINS
+        sync: false
       - key: PYTHON_VERSION
         value: 3.11.0
 

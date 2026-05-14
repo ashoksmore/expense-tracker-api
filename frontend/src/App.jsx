@@ -1,11 +1,31 @@
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
+import axios from "axios";
 import { getExpenses, getExpenseCategories, createExpense } from "./api";
 import AIPanel from "./components/AIPanel";
 import { EXPENSE_CATEGORIES as DEFAULT_CATEGORY_OPTIONS } from "./expenseCategories";
 import "./styles.css";
 
+function formatApiError(error) {
+  if (axios.isAxiosError(error)) {
+    if (error.code === "ECONNABORTED" || error.message?.toLowerCase().includes("timeout")) {
+      return "Request timed out while the server was starting. Try again—Render free tier can take up to a minute after sleep.";
+    }
+    if (!error.response) {
+      return "Cannot reach the API. Check the network, CORS, and that VITE_API_URL matches your deployed backend.";
+    }
+    const detail = error.response?.data?.detail;
+    if (typeof detail === "string") return detail;
+    return error.message || "Request failed.";
+  }
+  if (error instanceof Error) return error.message;
+  return "Something went wrong.";
+}
+
 function App() {
   const [expenses, setExpenses] = useState([]);
+  const [dataStatus, setDataStatus] = useState("loading");
+  const [expensesRefreshing, setExpensesRefreshing] = useState(false);
+  const [expensesError, setExpensesError] = useState(null);
   const [title, setTitle] = useState("");
   const [amount, setAmount] = useState("");
   const [category, setCategory] = useState("Other");
@@ -14,27 +34,26 @@ function App() {
   const [budgetCategory, setBudgetCategory] = useState("");
   const [budgetAmount, setBudgetAmount] = useState("");
 
-  useEffect(() => {
-    loadExpenses();
+  const fetchBootstrap = useCallback(async () => {
+    setDataStatus("loading");
+    setExpensesError(null);
+    try {
+      const [expRes, catRes] = await Promise.all([getExpenses(), getExpenseCategories()]);
+      setExpenses(expRes.data);
+      if (Array.isArray(catRes.data?.categories) && catRes.data.categories.length) {
+        setCategoryOptions(catRes.data.categories);
+        setCategory((c) => (catRes.data.categories.includes(c) ? c : "Other"));
+      }
+      setDataStatus("ready");
+    } catch (e) {
+      setExpensesError(formatApiError(e));
+      setDataStatus("error");
+    }
   }, []);
 
   useEffect(() => {
-    let cancelled = false;
-    (async () => {
-      try {
-        const res = await getExpenseCategories();
-        if (!cancelled && Array.isArray(res.data?.categories) && res.data.categories.length) {
-          setCategoryOptions(res.data.categories);
-          setCategory((c) => (res.data.categories.includes(c) ? c : "Other"));
-        }
-      } catch {
-        /* keep DEFAULT_CATEGORY_OPTIONS */
-      }
-    })();
-    return () => {
-      cancelled = true;
-    };
-  }, []);
+    void fetchBootstrap();
+  }, [fetchBootstrap]);
 
   useEffect(() => {
     const raw = window.localStorage.getItem("expenseBudgets");
@@ -48,8 +67,16 @@ function App() {
   }, []);
 
   const loadExpenses = async () => {
-    const response = await getExpenses();
-    setExpenses(response.data);
+    if (dataStatus === "ready") setExpensesRefreshing(true);
+    setExpensesError(null);
+    try {
+      const response = await getExpenses();
+      setExpenses(response.data);
+    } catch (e) {
+      setExpensesError(formatApiError(e));
+    } finally {
+      setExpensesRefreshing(false);
+    }
   };
   const fetchExpenses = loadExpenses;
 
@@ -156,6 +183,43 @@ function App() {
         <p className="app-subtitle">Track spending, budgets, and AI-powered insights.</p>
       </header>
 
+      {dataStatus === "loading" && (
+        <div className="api-load-banner api-load-banner--pending" role="status" aria-live="polite">
+          <strong>Connecting to your data…</strong>
+          <span>
+            The hosted API can take <strong>30–60 seconds</strong> the first time after idle (Render
+            spins services down). Expenses and categories load together—this is normal, not a broken
+            page.
+          </span>
+        </div>
+      )}
+
+      {dataStatus === "error" && expensesError && (
+        <div className="api-load-banner api-load-banner--error" role="alert">
+          <p>{expensesError}</p>
+          <div className="api-load-banner__actions">
+            <button type="button" className="ghost-button" onClick={() => void fetchBootstrap()}>
+              Retry
+            </button>
+          </div>
+        </div>
+      )}
+
+      {dataStatus === "ready" && expensesError && (
+        <div className="api-load-banner api-load-banner--error api-load-banner--inline" role="alert">
+          <p>{expensesError}</p>
+          <div className="api-load-banner__actions">
+            <button type="button" className="ghost-button" onClick={() => void loadExpenses()}>
+              Retry refresh
+            </button>
+          </div>
+        </div>
+      )}
+
+      {dataStatus === "ready" && expensesRefreshing && !expensesError && (
+        <p className="app-refresh-hint">Updating expenses…</p>
+      )}
+
       <form className="entry-form" onSubmit={handleSubmit}>
         <input
           placeholder="Expense title"
@@ -188,19 +252,27 @@ function App() {
       <section className="dashboard-grid">
         <article className="dashboard-card">
           <p className="card-label">Total Spend</p>
-          <p className="card-value">${totalSpend.toFixed(2)}</p>
+          <p className={`card-value ${dataStatus === "loading" ? "kpi-loading" : ""}`}>
+            {dataStatus === "loading" ? "—" : `$${totalSpend.toFixed(2)}`}
+          </p>
         </article>
         <article className="dashboard-card">
           <p className="card-label">Transactions</p>
-          <p className="card-value">{expenses.length}</p>
+          <p className={`card-value ${dataStatus === "loading" ? "kpi-loading" : ""}`}>
+            {dataStatus === "loading" ? "—" : expenses.length}
+          </p>
         </article>
         <article className="dashboard-card">
           <p className="card-label">Average Expense</p>
-          <p className="card-value">${averageExpense.toFixed(2)}</p>
+          <p className={`card-value ${dataStatus === "loading" ? "kpi-loading" : ""}`}>
+            {dataStatus === "loading" ? "—" : `$${averageExpense.toFixed(2)}`}
+          </p>
         </article>
         <article className="dashboard-card">
           <p className="card-label">Top Category</p>
-          <p className="card-value">{topCategory}</p>
+          <p className={`card-value ${dataStatus === "loading" ? "kpi-loading" : ""}`}>
+            {dataStatus === "loading" ? "—" : topCategory}
+          </p>
         </article>
       </section>
 
@@ -236,6 +308,8 @@ function App() {
               </tbody>
             </table>
           </div>
+        ) : dataStatus === "loading" ? (
+          <p className="empty-state">Loading transactions…</p>
         ) : (
           <p className="empty-state">No expenses yet. Add your first expense above.</p>
         )}
@@ -263,6 +337,8 @@ function App() {
                 );
               })}
             </div>
+          ) : dataStatus === "loading" ? (
+            <p className="empty-state">Loading category breakdown…</p>
           ) : (
             <p className="empty-state">No category data yet.</p>
           )}
@@ -287,6 +363,8 @@ function App() {
                 );
               })}
             </div>
+          ) : dataStatus === "loading" ? (
+            <p className="empty-state">Loading monthly trend…</p>
           ) : (
             <p className="empty-state">No monthly data yet.</p>
           )}

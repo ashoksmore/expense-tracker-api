@@ -154,6 +154,69 @@ body {
   font-weight: 500;
 }
 
+.api-load-banner {
+  margin: 0 0 18px 0;
+  padding: 14px 16px;
+  border-radius: var(--radius-md);
+  border: 1px solid var(--border-soft);
+  background: var(--bg-card);
+  box-shadow: var(--shadow-soft);
+  font-size: 0.92rem;
+  line-height: 1.45;
+}
+
+.api-load-banner strong {
+  display: block;
+  margin-bottom: 4px;
+  color: var(--text);
+}
+
+.api-load-banner span,
+.api-load-banner p {
+  margin: 0;
+  color: var(--text-muted);
+}
+
+.api-load-banner--pending {
+  border-color: var(--primary-muted);
+  background: var(--primary-muted);
+}
+
+.api-load-banner--error {
+  border-color: var(--danger-border);
+  background: var(--danger-bg);
+}
+
+.api-load-banner--error p {
+  color: var(--danger-text);
+}
+
+.api-load-banner__actions {
+  margin-top: 10px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  align-items: center;
+}
+
+.api-load-banner--inline {
+  margin-bottom: 12px;
+  padding: 10px 14px;
+  font-size: 0.88rem;
+}
+
+.kpi-loading {
+  opacity: 0.55;
+  font-variant-numeric: tabular-nums;
+}
+
+.app-refresh-hint {
+  margin: -8px 0 18px 0;
+  font-size: 0.88rem;
+  color: var(--text-muted);
+  font-weight: 500;
+}
+
 .entry-form {
   display: flex;
   gap: 10px;

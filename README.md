@@ -14,6 +14,10 @@ Full-stack expense tracker: log spending by category, optional local budgets wit
 
 ![FastAPI interactive docs](screenshots/api-docs.png)
 
+**AI assistant** — parse natural language, insights, monthly summary, category tools (replace `screenshots/ai-assistant.png` with your capture).
+
+![AI assistant panel](screenshots/ai-assistant.png)
+
 ---
 
 ## Architecture & data flow
@@ -129,5 +133,5 @@ cd frontend && npm install && npm run dev
 
 - `backend/` — FastAPI, models, categories, AI routes
 - `frontend/` — Vite + React SPA
-- `screenshots/` — PNGs embedded in this README (`dashboard.png`, `api-docs.png`)
+- `screenshots/` — PNGs for this README (`dashboard.png`, `api-docs.png`, `ai-assistant.png` — **replace the AI image** when you have a real capture)
 - [`docs/flow-diagram.md`](docs/flow-diagram.md) — same Mermaid as above (handy when browsing the `docs/` folder)

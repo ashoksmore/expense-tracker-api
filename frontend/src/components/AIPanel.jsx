@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 
-const API_BASE = "http://127.0.0.1:8000/api";
+const API_BASE = import.meta.env.VITE_API_URL || "http://127.0.0.1:8000";
 const VALID_TABS = ["parse", "insights", "summary"];
 
 const quickQuestions = [
@@ -55,7 +55,7 @@ export default function AIPanel({ expenses, onExpenseAdded }) {
   const refreshStatus = async () => {
     setAiStatus((prev) => ({ ...prev, loading: true }));
     try {
-      const response = await fetch(`${API_BASE}/ai/status`);
+      const response = await fetch(`${API_BASE}/api/ai/status`);
       const result = await response.json();
       setAiStatus({
         loading: false,
@@ -72,7 +72,7 @@ export default function AIPanel({ expenses, onExpenseAdded }) {
     setParsing(true);
     setParseError("");
     try {
-      const response = await fetch(`${API_BASE}/ai/parse-expense`, {
+      const response = await fetch(`${API_BASE}/api/ai/parse-expense`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ text: nlInput }),
@@ -90,7 +90,7 @@ export default function AIPanel({ expenses, onExpenseAdded }) {
   const handleConfirmExpense = async () => {
     if (!parsedExpense) return;
     try {
-      const response = await fetch("http://127.0.0.1:8000/expenses", {
+      const response = await fetch(`${API_BASE}/expenses`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -115,7 +115,7 @@ export default function AIPanel({ expenses, onExpenseAdded }) {
     setInsightError("");
     try {
       const askedQuestion = overrideQuestion || question || "Summarize my spending";
-      const response = await fetch(`${API_BASE}/ai/insights`, {
+      const response = await fetch(`${API_BASE}/api/ai/insights`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ question: askedQuestion }),
@@ -134,7 +134,7 @@ export default function AIPanel({ expenses, onExpenseAdded }) {
     setSummaryLoading(true);
     setSummaryError("");
     try {
-      const response = await fetch(`${API_BASE}/ai/monthly-summary`);
+      const response = await fetch(`${API_BASE}/api/ai/monthly-summary`);
       const result = await response.json();
       if (!response.ok) throw new Error(result.detail || "Unable to generate summary.");
       setSummary(result.summary || "");
@@ -150,7 +150,7 @@ export default function AIPanel({ expenses, onExpenseAdded }) {
     setCategoryLoading(true);
     setCategoryError("");
     try {
-      const response = await fetch(`${API_BASE}/ai/suggest-category`, {
+      const response = await fetch(`${API_BASE}/api/ai/suggest-category`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ title: categoryInput }),

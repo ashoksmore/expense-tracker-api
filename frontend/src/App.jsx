@@ -58,7 +58,7 @@ function App() {
     const existing = await getExpenses();
     await Promise.all(
       existing.data.map((expense) =>
-        fetch(`http://127.0.0.1:8000/expenses/${expense.id}`, { method: "DELETE" }),
+        fetch(`${import.meta.env.VITE_API_URL || "http://127.0.0.1:8000"}/expenses/${expense.id}`, { method: "DELETE" }),
       ),
     );
     await Promise.all(

@@ -1,6 +1,11 @@
 import json
 import os
 
+from groq import Groq
+AI_PROVIDER = os.getenv("AI_PROVIDER", "ollama")
+GROQ_API_KEY = os.getenv("GROQ_API_KEY", "")
+GROQ_MODEL = "llama-3.1-8b-instant"
+
 import httpx
 from fastapi import APIRouter, Depends, HTTPException
 from pydantic import BaseModel
@@ -38,24 +43,46 @@ class CategoryRequest(BaseModel):
     title: str
 
 
-def ask_ollama(prompt: str) -> str:
-    payload = {
-        "model": OLLAMA_MODEL,
-        "prompt": prompt,
-        "stream": False,
-    }
-    try:
-        response = httpx.post(OLLAMA_URL, json=payload, timeout=30.0)
-        response.raise_for_status()
-        data = response.json()
-        return str(data.get("response", "")).strip()
-    except Exception as exc:
-        raise HTTPException(
-            status_code=503,
-            detail="AI service unavailable. Is Ollama running? Run: ollama serve",
-        ) from exc
+# def ask_ollama(prompt: str) -> str:
+#     payload = {
+#         "model": OLLAMA_MODEL,
+#         "prompt": prompt,
+#         "stream": False,
+#     }
+#     try:
+#         response = httpx.post(OLLAMA_URL, json=payload, timeout=30.0)
+#         response.raise_for_status()
+#         data = response.json()
+#         return str(data.get("response", "")).strip()
+#     except Exception as exc:
+#         raise HTTPException(
+#             status_code=503,
+#             detail="AI service unavailable. Is Ollama running? Run: ollama serve",
+#         ) from exc
 
-
+async def ask_llm(prompt: str) -> str:
+    if AI_PROVIDER == "groq":
+        try:
+            client = Groq(api_key=GROQ_API_KEY)
+            response = client.chat.completions.create(
+                model=GROQ_MODEL,
+                messages=[{"role": "user", "content": prompt}],
+                max_tokens=300
+            )
+            return response.choices[0].message.content.strip()
+        except Exception as e:
+            raise HTTPException(status_code=503, detail=f"Groq error: {str(e)}")
+    else:
+        try:
+            async with httpx.AsyncClient(timeout=30.0) as client:
+                response = await client.post(
+                    OLLAMA_URL,
+                    json={"model": OLLAMA_MODEL, "prompt": prompt, "stream": False}
+                )
+                return response.json()["response"].strip()
+        except httpx.ConnectError:
+            raise HTTPException(status_code=503, detail="Ollama not running. Run: ollama serve")
+    
 @router.get("/status")
 def ai_status():
     try:
@@ -78,7 +105,7 @@ def parse_expense(request: ParseRequest):
         "No explanation, no markdown, just the JSON object."
         f"\n\nText to parse: {request.text}"
     )
-    ollama_response = ask_ollama(prompt)
+    ollama_response = ask_llm(prompt)
 
     try:
         parsed = json.loads(ollama_response)
@@ -112,7 +139,7 @@ def get_ai_insights(request: InsightRequest, db: Session = Depends(get_db)):
         f"{json.dumps(facts, indent=2)}\n\n"
         f"Question: {request.question}"
     )
-    answer = ask_ollama(prompt)
+    answer = ask_llm(prompt)
     return {"answer": answer, "based_on_expenses": facts["count"]}
 
 
@@ -128,7 +155,7 @@ def get_monthly_summary(db: Session = Depends(get_db)):
         "End with one actionable recommendation.\n"
         f"Data: {json.dumps(facts)}"
     )
-    summary = ask_ollama(prompt)
+    summary = ask_llm(prompt)
     top_category = next(iter(facts["by_category"]), "None")
 
     return {
@@ -147,7 +174,7 @@ def suggest_category(request: CategoryRequest):
         "No explanation. One word only.\n"
         f"Expense title: {request.title}"
     )
-    response = ask_ollama(prompt).strip()
+    response = ask_llm(prompt).strip()
     first_word = response.split()[0] if response else ""
     cleaned_response = first_word.title()
     if cleaned_response not in VALID_CATEGORIES:

@@ -1,6 +1,16 @@
-venv/
+# Python
 __pycache__/
-*.db
+*.pyc
+venv/
 .env
-frontend/node_modules/
+*.db
+*.sqlite3
+
+# Node
+node_modules/
 frontend/dist/
+frontend/.env.local
+
+# OS
+.DS_Store
+Thumbs.db

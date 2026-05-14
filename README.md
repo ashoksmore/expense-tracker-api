@@ -2,8 +2,6 @@
 
 Full-stack expense tracker: log spending by category, optional local budgets with alerts, charts for category and monthly trends, and an **AI** panel (parse natural language into an expense, insights, monthly summary). **API:** FastAPI + SQLAlchemy + SQLite. **UI:** React + Vite, deployed as a static site.
 
-On **GitHub**, the images and diagrams below render **directly in this file**—no extra clicks.
-
 ---
 
 ## UI (screenshots)
@@ -67,8 +65,8 @@ sequenceDiagram
 
 | What | URL |
 |------|-----|
-| **App** | [https://expense-tracker-frontend.onrender.com](https://expense-tracker-frontend.onrender.com) |
-| **API docs** | [https://expense-tracker-api.onrender.com/docs](https://expense-tracker-api.onrender.com/docs) |
+| **App** | [https://expense-tracker-fe-wg3g.onrender.com](https://expense-tracker-fe-wg3g.onrender.com) |
+| **API docs** | [https://expense-tracker-kwyf.onrender.com/docs](https://expense-tracker-kwyf.onrender.com/docs) |
 
 ## Features
 

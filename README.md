@@ -44,9 +44,15 @@ Frontend URL: `http://localhost:5173`
 
 ## Screenshots
 
-App dashboard:
+Images are stored under [`screenshots/`](screenshots/) (paths are relative to this README so they render on **GitHub** and in your editor’s Markdown preview). Commit that folder so remote viewers see them too.
 
-![App dashboard](docs/screenshots/app-dashboard.png)
+**Dashboard**
+
+![Expense Tracker dashboard](screenshots/dashboard.png)
+
+**API docs (local)**
+
+![FastAPI interactive docs](screenshots/api-docs.png)
 
 ## Architecture Flow
 

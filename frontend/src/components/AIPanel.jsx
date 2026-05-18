@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { formatCurrency } from "../format";
 
 const API_BASE = import.meta.env.VITE_API_URL || "http://127.0.0.1:8000";
 const VALID_TABS = ["parse", "insights", "summary"];
@@ -228,7 +229,9 @@ export default function AIPanel({ expenses, onExpenseAdded }) {
               <div style={{ marginBottom: "8px" }}>
                 <strong>{parsedExpense.title}</strong>
               </div>
-              <div style={{ marginBottom: "8px" }}>${Number(parsedExpense.amount || 0).toFixed(2)}</div>
+              <div style={{ marginBottom: "8px" }}>
+                {formatCurrency(Number(parsedExpense.amount || 0))}
+              </div>
               <span className="ai-pill">{parsedExpense.category || "Other"}</span>
               <div className="ai-panel__actions">
                 <button type="button" onClick={handleConfirmExpense}>

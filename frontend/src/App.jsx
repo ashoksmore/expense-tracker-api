@@ -3,7 +3,15 @@ import axios from "axios";
 import { getExpenses, getExpenseCategories, createExpense } from "./api";
 import AIPanel from "./components/AIPanel";
 import { EXPENSE_CATEGORIES as DEFAULT_CATEGORY_OPTIONS } from "./expenseCategories";
+import {
+  formatCurrency,
+  formatCurrencyCompact,
+  formatExpenseDate,
+  formatMonthYearLabel,
+} from "./format";
 import "./styles.css";
+
+const THEME_STORAGE_KEY = "expenseTrackerTheme";
 
 function formatApiError(error) {
   if (axios.isAxiosError(error)) {
@@ -33,6 +41,24 @@ function App() {
   const [budgets, setBudgets] = useState({});
   const [budgetCategory, setBudgetCategory] = useState("");
   const [budgetAmount, setBudgetAmount] = useState("");
+  const [themeMode, setThemeMode] = useState(() => {
+    try {
+      const v = localStorage.getItem(THEME_STORAGE_KEY);
+      if (v === "light" || v === "dark" || v === "system") return v;
+    } catch {
+      /* ignore */
+    }
+    return "system";
+  });
+
+  useEffect(() => {
+    try {
+      localStorage.setItem(THEME_STORAGE_KEY, themeMode);
+    } catch {
+      /* ignore */
+    }
+    document.documentElement.setAttribute("data-theme", themeMode);
+  }, [themeMode]);
 
   const fetchBootstrap = useCallback(async () => {
     setDataStatus("loading");
@@ -94,6 +120,13 @@ function App() {
   };
 
   const handleLoadDemoData = async () => {
+    if (
+      !window.confirm(
+        "Replace all current expenses with demo data? This deletes every expense in the list and loads sample rows. Continue?",
+      )
+    ) {
+      return;
+    }
     const demoExpenses = [
       { title: "Groceries - Whole Foods", amount: 96.45, category: "Food" },
       { title: "Monthly Metro Pass", amount: 72.0, category: "Transport" },
@@ -137,13 +170,21 @@ function App() {
   const maxCategoryAmount = categorySeries[0]?.amount || 1;
   const monthlyTotals = expenses.reduce((acc, expense) => {
     const date = expense.created_at ? new Date(expense.created_at) : new Date();
-    const monthLabel = date.toLocaleString("en-US", { month: "short", year: "numeric" });
-    acc[monthLabel] = (acc[monthLabel] || 0) + Number(expense.amount || 0);
+    const key = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}`;
+    acc[key] = (acc[key] || 0) + Number(expense.amount || 0);
     return acc;
   }, {});
   const monthlySeries = Object.entries(monthlyTotals)
-    .map(([month, amount]) => ({ month, amount: Number(amount) }))
-    .sort((a, b) => new Date(`1 ${a.month}`).getTime() - new Date(`1 ${b.month}`).getTime());
+    .map(([key, amount]) => {
+      const d = new Date(`${key}T12:00:00`);
+      return {
+        key,
+        monthLabel: formatMonthYearLabel(d),
+        monthShort: new Intl.DateTimeFormat(undefined, { month: "short" }).format(d),
+        amount: Number(amount),
+      };
+    })
+    .sort((a, b) => a.key.localeCompare(b.key));
   const maxMonthlyAmount = Math.max(...monthlySeries.map((item) => item.amount), 1);
   const budgetRows = Object.keys({ ...topCategoryTotals, ...budgets })
     .sort()
@@ -178,18 +219,53 @@ function App() {
 
   return (
     <div className="app">
-      <header className="app-header">
-        <h1>Expense Tracker</h1>
-        <p className="app-subtitle">Track spending, budgets, and AI-powered insights.</p>
-      </header>
+      <div className="app-toolbar">
+        <header className="app-header">
+          <h1>Expense Tracker</h1>
+          <p className="app-subtitle">Track spending, budgets, and AI-powered insights.</p>
+        </header>
+        <div className="theme-toggle" role="group" aria-label="Color theme">
+          <span className="theme-toggle__label">Theme</span>
+          <button
+            type="button"
+            className={themeMode === "light" ? "is-active" : ""}
+            onClick={() => setThemeMode("light")}
+          >
+            Light
+          </button>
+          <button
+            type="button"
+            className={themeMode === "system" ? "is-active" : ""}
+            onClick={() => setThemeMode("system")}
+          >
+            System
+          </button>
+          <button
+            type="button"
+            className={themeMode === "dark" ? "is-active" : ""}
+            onClick={() => setThemeMode("dark")}
+          >
+            Dark
+          </button>
+        </div>
+      </div>
+
+      <nav className="app-subnav" aria-label="Page sections">
+        <a href="#add-expense">Add</a>
+        <a href="#dashboard">Dashboard</a>
+        <a href="#transactions">Transactions</a>
+        <a href="#charts">Charts</a>
+        <a href="#budgets">Budgets</a>
+        <a href="#ai-assistant">AI</a>
+      </nav>
 
       {dataStatus === "loading" && (
         <div className="api-load-banner api-load-banner--pending" role="status" aria-live="polite">
-          <strong>Connecting to your data…</strong>
+          <strong>Loading your workspace…</strong>
           <span>
-            The hosted API can take <strong>30–60 seconds</strong> the first time after idle (Render
-            spins services down). Expenses and categories load together—this is normal, not a broken
-            page.
+            The live demo API may need <strong>about 30–60 seconds</strong> on the first request
+            after idle—common when a hosted service has scaled down to save cost. Expenses and
+            categories load in one step; the dashboard will appear as soon as they arrive.
           </span>
         </div>
       )}
@@ -220,7 +296,7 @@ function App() {
         <p className="app-refresh-hint">Updating expenses…</p>
       )}
 
-      <form className="entry-form" onSubmit={handleSubmit}>
+      <form id="add-expense" className="entry-form" onSubmit={handleSubmit}>
         <input
           placeholder="Expense title"
           value={title}
@@ -230,6 +306,9 @@ function App() {
         <input
           placeholder="Amount"
           type="number"
+          inputMode="decimal"
+          min="0"
+          step="0.01"
           value={amount}
           onChange={(e) => setAmount(e.target.value)}
           required
@@ -249,11 +328,11 @@ function App() {
         <button>Add Expense</button>
       </form>
 
-      <section className="dashboard-grid">
+      <section id="dashboard" className="dashboard-grid">
         <article className="dashboard-card">
           <p className="card-label">Total Spend</p>
           <p className={`card-value ${dataStatus === "loading" ? "kpi-loading" : ""}`}>
-            {dataStatus === "loading" ? "—" : `$${totalSpend.toFixed(2)}`}
+            {dataStatus === "loading" ? "—" : formatCurrency(totalSpend)}
           </p>
         </article>
         <article className="dashboard-card">
@@ -265,7 +344,7 @@ function App() {
         <article className="dashboard-card">
           <p className="card-label">Average Expense</p>
           <p className={`card-value ${dataStatus === "loading" ? "kpi-loading" : ""}`}>
-            {dataStatus === "loading" ? "—" : `$${averageExpense.toFixed(2)}`}
+            {dataStatus === "loading" ? "—" : formatCurrency(averageExpense)}
           </p>
         </article>
         <article className="dashboard-card">
@@ -276,7 +355,7 @@ function App() {
         </article>
       </section>
 
-      <section className="table-section">
+      <section id="transactions" className="table-section">
         <div className="table-header">
           <h2>Recent Transactions</h2>
           <button type="button" className="ghost-button" onClick={handleLoadDemoData}>
@@ -284,30 +363,45 @@ function App() {
           </button>
         </div>
         {sortedExpenses.length ? (
-          <div className="table-wrap">
-            <table>
-              <thead>
-                <tr>
-                  <th>Title</th>
-                  <th>Category</th>
-                  <th>Amount</th>
-                  <th>Date</th>
-                </tr>
-              </thead>
-              <tbody>
-                {sortedExpenses.map((expense) => (
-                  <tr key={expense.id}>
-                    <td>{expense.title}</td>
-                    <td>{expense.category || "Uncategorized"}</td>
-                    <td>${Number(expense.amount || 0).toFixed(2)}</td>
-                    <td>
-                      {expense.created_at ? new Date(expense.created_at).toLocaleDateString() : "-"}
-                    </td>
+          <>
+            <div className="table-wrap">
+              <table>
+                <thead>
+                  <tr>
+                    <th>Title</th>
+                    <th>Category</th>
+                    <th>Amount</th>
+                    <th>Date</th>
                   </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
+                </thead>
+                <tbody>
+                  {sortedExpenses.map((expense) => (
+                    <tr key={expense.id}>
+                      <td>{expense.title}</td>
+                      <td>{expense.category || "Uncategorized"}</td>
+                      <td>{formatCurrency(expense.amount)}</td>
+                      <td>{formatExpenseDate(expense.created_at)}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+            <div className="transaction-cards">
+              {sortedExpenses.map((expense) => (
+                <article key={expense.id} className="transaction-card">
+                  <p className="transaction-card__title">{expense.title}</p>
+                  <div className="transaction-card__row">
+                    <span>{expense.category || "Uncategorized"}</span>
+                    <span className="transaction-card__amount">{formatCurrency(expense.amount)}</span>
+                  </div>
+                  <div className="transaction-card__row">
+                    <span>Date</span>
+                    <span>{formatExpenseDate(expense.created_at)}</span>
+                  </div>
+                </article>
+              ))}
+            </div>
+          </>
         ) : dataStatus === "loading" ? (
           <p className="empty-state">Loading transactions…</p>
         ) : (
@@ -315,7 +409,7 @@ function App() {
         )}
       </section>
 
-      <section className="chart-grid">
+      <section id="charts" className="chart-grid">
         <article className="table-section">
           <div className="table-header">
             <h2>Category Breakdown</h2>
@@ -325,10 +419,14 @@ function App() {
               {categorySeries.map((item) => {
                 const percent = Math.round((item.amount / maxCategoryAmount) * 100);
                 return (
-                  <div className="bar-row" key={item.category}>
+                  <div
+                    className="bar-row"
+                    key={item.category}
+                    title={`${item.category}: ${formatCurrency(item.amount)}`}
+                  >
                     <div className="bar-meta">
                       <span>{item.category}</span>
-                      <strong>${item.amount.toFixed(2)}</strong>
+                      <strong>{formatCurrency(item.amount)}</strong>
                     </div>
                     <div className="bar-track">
                       <div className="bar-fill" style={{ width: `${percent}%` }} />
@@ -353,12 +451,12 @@ function App() {
               {monthlySeries.map((item) => {
                 const height = Math.max(12, Math.round((item.amount / maxMonthlyAmount) * 120));
                 return (
-                  <div className="mini-chart-col" key={item.month}>
+                  <div className="mini-chart-col" key={item.key}>
                     <div className="mini-bar-wrap">
-                      <div className="mini-bar" style={{ height: `${height}px` }} />
+                      <div className="mini-bar" style={{ height: `${height}px` }} title={item.monthLabel} />
                     </div>
-                    <span className="mini-label">{item.month.split(" ")[0]}</span>
-                    <span className="mini-value">${item.amount.toFixed(0)}</span>
+                    <span className="mini-label">{item.monthShort}</span>
+                    <span className="mini-value">{formatCurrencyCompact(item.amount)}</span>
                   </div>
                 );
               })}
@@ -371,7 +469,7 @@ function App() {
         </article>
       </section>
 
-      <section className="table-section">
+      <section id="budgets" className="table-section">
         <div className="table-header">
           <h2>Budget Tracking</h2>
         </div>
@@ -397,7 +495,8 @@ function App() {
           <div className="alert-list">
             {alerts.map((item) => (
               <p key={item.category} className="alert-item">
-                Alert: {item.category} is over budget by ${(item.spent - item.budget).toFixed(2)}.
+                Alert: {item.category} is over budget by{" "}
+                {formatCurrency(item.spent - item.budget)}.
               </p>
             ))}
           </div>
@@ -411,10 +510,10 @@ function App() {
                   <span>{item.category}</span>
                   {item.budget > 0 ? (
                     <strong>
-                      ${item.spent.toFixed(2)} / ${item.budget.toFixed(2)}
+                      {formatCurrency(item.spent)} / {formatCurrency(item.budget)}
                     </strong>
                   ) : (
-                    <strong>${item.spent.toFixed(2)} / No budget</strong>
+                    <strong>{formatCurrency(item.spent)} / No budget</strong>
                   )}
                 </div>
                 <div className="bar-track budget-track">
@@ -444,7 +543,9 @@ function App() {
         )}
       </section>
 
-      <AIPanel expenses={expenses} onExpenseAdded={fetchExpenses} />
+      <section id="ai-assistant">
+        <AIPanel expenses={expenses} onExpenseAdded={fetchExpenses} />
+      </section>
     </div>
   );
 }

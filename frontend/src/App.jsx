@@ -2,7 +2,7 @@ import { useCallback, useEffect, useState } from "react";
 import axios from "axios";
 import { getExpenses, getExpenseCategories, createExpense } from "./api";
 import AIPanel from "./components/AIPanel";
-import Login, { DEMO_PASSWORD, DEMO_USERNAME } from "./components/Login";
+import Login from "./components/Login";
 import { EXPENSE_CATEGORIES as DEFAULT_CATEGORY_OPTIONS } from "./expenseCategories";
 import {
   formatCurrency,
@@ -295,14 +295,6 @@ function App() {
             Sign out
           </button>
         </div>
-      </div>
-
-      <div className="app-demo-credentials" role="note">
-        <span className="app-demo-bar__badge">Demo login</span>
-        <p>
-          Use username <strong>{DEMO_USERNAME}</strong> and password <strong>{DEMO_PASSWORD}</strong>{" "}
-          to sign in.
-        </p>
       </div>
 
       <div className="app-demo-bar" aria-label="Project links">

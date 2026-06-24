@@ -1415,33 +1415,6 @@ html[data-theme="dark"] .login-card__header h1 {
   text-align: center;
 }
 
-.app-demo-credentials {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  gap: 10px 12px;
-  margin-bottom: 14px;
-  padding: 12px 16px;
-  border-radius: var(--radius-md);
-  border: 1px solid var(--border);
-  background: var(--primary-muted);
-  box-shadow: var(--shadow-soft);
-}
-
-.app-demo-credentials p {
-  margin: 0;
-  flex: 1;
-  min-width: min(100%, 200px);
-  font-size: 0.9rem;
-  color: var(--text-muted);
-  line-height: 1.4;
-}
-
-.app-demo-credentials strong {
-  color: var(--text);
-  font-weight: 700;
-}
-
 .app-toolbar__actions {
   display: flex;
   flex-wrap: wrap;

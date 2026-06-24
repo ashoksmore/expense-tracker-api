@@ -301,7 +301,7 @@ function App() {
         <span className="app-demo-bar__badge">Demo login</span>
         <p>
           Use username <strong>{DEMO_USERNAME}</strong> and password <strong>{DEMO_PASSWORD}</strong>{" "}
-          to sign in. This is a frontend-only gate for the demo.
+          to sign in.
         </p>
       </div>
 

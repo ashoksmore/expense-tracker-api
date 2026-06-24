@@ -99,8 +99,6 @@ function Login({ onLogin, themeMode, setThemeMode }) {
             Sign in
           </button>
         </form>
-
-        <p className="login-hint">Frontend demo only — credentials are not verified by the server.</p>
       </div>
     </div>
   );

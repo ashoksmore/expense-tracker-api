@@ -1,4 +1,5 @@
 import { useState } from "react";
+import ThemeToggle from "./ThemeToggle";
 
 export const DEMO_USERNAME = "ash";
 export const DEMO_PASSWORD = "12345";
@@ -24,30 +25,7 @@ function Login({ onLogin, themeMode, setThemeMode }) {
     <div className="login-page">
       <div className="login-card">
         <div className="login-card__toolbar">
-          <div className="theme-toggle" role="group" aria-label="Color theme">
-            <span className="theme-toggle__label">Theme</span>
-            <button
-              type="button"
-              className={themeMode === "light" ? "is-active" : ""}
-              onClick={() => setThemeMode("light")}
-            >
-              Light
-            </button>
-            <button
-              type="button"
-              className={themeMode === "system" ? "is-active" : ""}
-              onClick={() => setThemeMode("system")}
-            >
-              System
-            </button>
-            <button
-              type="button"
-              className={themeMode === "dark" ? "is-active" : ""}
-              onClick={() => setThemeMode("dark")}
-            >
-              Dark
-            </button>
-          </div>
+          <ThemeToggle themeMode={themeMode} setThemeMode={setThemeMode} />
         </div>
 
         <header className="login-card__header">

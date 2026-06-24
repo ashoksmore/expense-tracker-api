@@ -274,32 +274,19 @@ html[data-theme="dark"] .app-header h1 {
 
 .theme-toggle {
   display: flex;
-  flex-wrap: wrap;
-  gap: 6px;
+  gap: 4px;
   align-items: center;
   flex-shrink: 0;
 }
 
-.theme-toggle__label {
-  font-size: 11px;
-  font-weight: 600;
-  text-transform: uppercase;
-  letter-spacing: 0.06em;
-  color: var(--text-subtle);
-  width: 100%;
-}
-
-@media (min-width: 520px) {
-  .theme-toggle__label {
-    width: auto;
-    margin-right: 4px;
-  }
-}
-
 .theme-toggle button {
-  padding: 7px 11px;
-  font-size: 12px;
-  font-weight: 600;
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  padding: 0;
   border-radius: var(--radius-sm);
   border: 1px solid var(--border);
   background: var(--bg-elevated);
@@ -310,10 +297,58 @@ html[data-theme="dark"] .app-header h1 {
   background-image: none;
 }
 
-.theme-toggle button:hover:not(:disabled) {
+.theme-toggle__icon {
+  width: 18px;
+  height: 18px;
+  display: block;
+}
+
+.theme-toggle button[data-tooltip]::after {
+  content: attr(data-tooltip);
+  position: absolute;
+  bottom: calc(100% + 8px);
+  left: 50%;
+  transform: translateX(-50%);
+  padding: 5px 8px;
+  border-radius: 6px;
+  background: var(--text);
+  color: var(--bg-card);
+  font-size: 11px;
+  font-weight: 600;
+  line-height: 1;
+  white-space: nowrap;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.12s ease;
+  z-index: 30;
+}
+
+.theme-toggle button[data-tooltip]::before {
+  content: "";
+  position: absolute;
+  bottom: calc(100% + 2px);
+  left: 50%;
+  transform: translateX(-50%);
+  border: 5px solid transparent;
+  border-top-color: var(--text);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.12s ease;
+  z-index: 30;
+}
+
+.theme-toggle button:hover:not(:disabled),
+.theme-toggle button:focus-visible {
   border-color: var(--primary);
   color: var(--primary);
   filter: none;
+}
+
+.theme-toggle button:hover:not(:disabled)[data-tooltip]::after,
+.theme-toggle button:hover:not(:disabled)[data-tooltip]::before,
+.theme-toggle button:focus-visible[data-tooltip]::after,
+.theme-toggle button:focus-visible[data-tooltip]::before {
+  opacity: 1;
 }
 
 .theme-toggle button.is-active {

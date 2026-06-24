@@ -3,6 +3,7 @@ import axios from "axios";
 import { getExpenses, getExpenseCategories, createExpense } from "./api";
 import AIPanel from "./components/AIPanel";
 import Login from "./components/Login";
+import ThemeToggle from "./components/ThemeToggle";
 import { EXPENSE_CATEGORIES as DEFAULT_CATEGORY_OPTIONS } from "./expenseCategories";
 import {
   formatCurrency,
@@ -267,30 +268,7 @@ function App() {
           <p className="app-user" title={username}>
             Signed in as <strong>{username}</strong>
           </p>
-          <div className="theme-toggle" role="group" aria-label="Color theme">
-            <span className="theme-toggle__label">Theme</span>
-            <button
-              type="button"
-              className={themeMode === "light" ? "is-active" : ""}
-              onClick={() => setThemeMode("light")}
-            >
-              Light
-            </button>
-            <button
-              type="button"
-              className={themeMode === "system" ? "is-active" : ""}
-              onClick={() => setThemeMode("system")}
-            >
-              System
-            </button>
-            <button
-              type="button"
-              className={themeMode === "dark" ? "is-active" : ""}
-              onClick={() => setThemeMode("dark")}
-            >
-              Dark
-            </button>
-          </div>
+          <ThemeToggle themeMode={themeMode} setThemeMode={setThemeMode} />
           <button type="button" className="ghost-button" onClick={handleLogout}>
             Sign out
           </button>

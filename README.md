@@ -2,6 +2,14 @@
 
 Full-stack expense tracker: log spending by category, optional local budgets with alerts, charts for category and monthly trends, and an **AI** panel (parse natural language into an expense, insights, monthly summary). **API:** FastAPI + SQLAlchemy + SQLite. **UI:** React + Vite, deployed as a static site.
 
+## Live demo
+
+| What | URL |
+|------|-----|
+| **App** | [https://expense-tracker-fe-wg3g.onrender.com](https://expense-tracker-fe-wg3g.onrender.com) |
+| **API docs** | [https://expense-tracker-kwyf.onrender.com/docs](https://expense-tracker-kwyf.onrender.com/docs) |
+| **Source** | [github.com/ashoksmore/expense-tracker-api](https://github.com/ashoksmore/expense-tracker-api) |
+
 ---
 
 ## UI (screenshots)
@@ -62,15 +70,6 @@ sequenceDiagram
 ```
 
 **Notes:** Spend totals and category breakdowns are computed in the backend from stored rows. AI routes call the configured provider with fallbacks when the model is unavailable. Budgets are stored in `localStorage` in the browser.
-
----
-
-## Live demo
-
-| What | URL |
-|------|-----|
-| **App** | [https://expense-tracker-fe-wg3g.onrender.com](https://expense-tracker-fe-wg3g.onrender.com) |
-| **API docs** | [https://expense-tracker-kwyf.onrender.com/docs](https://expense-tracker-kwyf.onrender.com/docs) |
 
 ## Features
 

@@ -2,6 +2,7 @@ import { useCallback, useEffect, useState } from "react";
 import axios from "axios";
 import { getExpenses, getExpenseCategories, createExpense } from "./api";
 import AIPanel from "./components/AIPanel";
+import Login, { DEMO_PASSWORD, DEMO_USERNAME } from "./components/Login";
 import { EXPENSE_CATEGORIES as DEFAULT_CATEGORY_OPTIONS } from "./expenseCategories";
 import {
   formatCurrency,
@@ -12,6 +13,11 @@ import {
 import "./styles.css";
 
 const THEME_STORAGE_KEY = "expenseTrackerTheme";
+const AUTH_STORAGE_KEY = "expenseTrackerAuth";
+
+const LIVE_DEMO_URL = "https://expense-tracker-fe-wg3g.onrender.com";
+const API_DOCS_URL = "https://expense-tracker-kwyf.onrender.com/docs";
+const GITHUB_URL = "https://github.com/ashoksmore/expense-tracker-api";
 
 function formatApiError(error) {
   if (axios.isAxiosError(error)) {
@@ -30,6 +36,16 @@ function formatApiError(error) {
 }
 
 function App() {
+  const [username, setUsername] = useState(() => {
+    try {
+      const raw = localStorage.getItem(AUTH_STORAGE_KEY);
+      if (!raw) return null;
+      const parsed = JSON.parse(raw);
+      return typeof parsed?.username === "string" ? parsed.username : null;
+    } catch {
+      return null;
+    }
+  });
   const [expenses, setExpenses] = useState([]);
   const [dataStatus, setDataStatus] = useState("loading");
   const [expensesRefreshing, setExpensesRefreshing] = useState(false);
@@ -78,8 +94,9 @@ function App() {
   }, []);
 
   useEffect(() => {
+    if (!username) return;
     void fetchBootstrap();
-  }, [fetchBootstrap]);
+  }, [fetchBootstrap, username]);
 
   useEffect(() => {
     const raw = window.localStorage.getItem("expenseBudgets");
@@ -217,6 +234,28 @@ function App() {
     window.localStorage.setItem("expenseBudgets", JSON.stringify(next));
   };
 
+  const handleLogin = (name) => {
+    try {
+      localStorage.setItem(AUTH_STORAGE_KEY, JSON.stringify({ username: name }));
+    } catch {
+      /* ignore */
+    }
+    setUsername(name);
+  };
+
+  const handleLogout = () => {
+    try {
+      localStorage.removeItem(AUTH_STORAGE_KEY);
+    } catch {
+      /* ignore */
+    }
+    setUsername(null);
+  };
+
+  if (!username) {
+    return <Login onLogin={handleLogin} themeMode={themeMode} setThemeMode={setThemeMode} />;
+  }
+
   return (
     <div className="app">
       <div className="app-toolbar">
@@ -224,29 +263,70 @@ function App() {
           <h1>Expense Tracker</h1>
           <p className="app-subtitle">Track spending, budgets, and AI-powered insights.</p>
         </header>
-        <div className="theme-toggle" role="group" aria-label="Color theme">
-          <span className="theme-toggle__label">Theme</span>
-          <button
-            type="button"
-            className={themeMode === "light" ? "is-active" : ""}
-            onClick={() => setThemeMode("light")}
-          >
-            Light
+        <div className="app-toolbar__actions">
+          <p className="app-user" title={username}>
+            Signed in as <strong>{username}</strong>
+          </p>
+          <div className="theme-toggle" role="group" aria-label="Color theme">
+            <span className="theme-toggle__label">Theme</span>
+            <button
+              type="button"
+              className={themeMode === "light" ? "is-active" : ""}
+              onClick={() => setThemeMode("light")}
+            >
+              Light
+            </button>
+            <button
+              type="button"
+              className={themeMode === "system" ? "is-active" : ""}
+              onClick={() => setThemeMode("system")}
+            >
+              System
+            </button>
+            <button
+              type="button"
+              className={themeMode === "dark" ? "is-active" : ""}
+              onClick={() => setThemeMode("dark")}
+            >
+              Dark
+            </button>
+          </div>
+          <button type="button" className="ghost-button" onClick={handleLogout}>
+            Sign out
           </button>
-          <button
-            type="button"
-            className={themeMode === "system" ? "is-active" : ""}
-            onClick={() => setThemeMode("system")}
+        </div>
+      </div>
+
+      <div className="app-demo-credentials" role="note">
+        <span className="app-demo-bar__badge">Demo login</span>
+        <p>
+          Use username <strong>{DEMO_USERNAME}</strong> and password <strong>{DEMO_PASSWORD}</strong>{" "}
+          to sign in. This is a frontend-only gate for the demo.
+        </p>
+      </div>
+
+      <div className="app-demo-bar" aria-label="Project links">
+        <div className="app-demo-bar__lead">
+          <span className="app-demo-bar__badge">Live demo</span>
+          <p className="app-demo-bar__text">
+            Hosted on Render — explore the app, API contract, or source.
+          </p>
+        </div>
+        <div className="app-demo-bar__links">
+          <a
+            href={LIVE_DEMO_URL}
+            className="demo-link demo-link--primary"
+            target="_blank"
+            rel="noopener noreferrer"
           >
-            System
-          </button>
-          <button
-            type="button"
-            className={themeMode === "dark" ? "is-active" : ""}
-            onClick={() => setThemeMode("dark")}
-          >
-            Dark
-          </button>
+            Open app
+          </a>
+          <a href={API_DOCS_URL} className="demo-link" target="_blank" rel="noopener noreferrer">
+            API docs
+          </a>
+          <a href={GITHUB_URL} className="demo-link" target="_blank" rel="noopener noreferrer">
+            GitHub
+          </a>
         </div>
       </div>
 

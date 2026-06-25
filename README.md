@@ -10,6 +10,17 @@ Full-stack expense tracker: log spending by category, optional local budgets wit
 | **API docs** | [https://expense-tracker-kwyf.onrender.com/docs](https://expense-tracker-kwyf.onrender.com/docs) |
 | **Source** | [github.com/ashoksmore/expense-tracker-api](https://github.com/ashoksmore/expense-tracker-api) |
 
+### Demo login
+
+The web app uses a **frontend-only** login screen before the dashboard (credentials are not checked by the API).
+
+| Field | Value |
+|-------|-------|
+| **Username** | `ash` |
+| **Password** | `12345` |
+
+Use these on the [live app](https://expense-tracker-fe-wg3g.onrender.com) or when running the UI locally at [http://localhost:5173](http://localhost:5173).
+
 ---
 
 ## UI (screenshots)
@@ -74,6 +85,7 @@ sequenceDiagram
 ## Features
 
 - Add expenses with title, amount, and **category** from a server-defined list
+- **Demo login** gate on the UI (username `ash`, password `12345`)
 - Dashboard KPIs, recent transactions, category breakdown, monthly spend trend
 - **Budgets** in the browser with over-budget alerts
 - **AI:** parse text → expense, spending Q&A, monthly summary, category suggestion (Groq or Ollama via env)
@@ -103,6 +115,7 @@ cd frontend && npm install && npm run dev
 ```
 
 - UI: [http://localhost:5173](http://localhost:5173) — point the UI at the API with `frontend/.env.local`, e.g. `VITE_API_URL=http://127.0.0.1:8000` ([Vite env](https://vitejs.dev/guide/env-and-mode.html)).
+- **Login:** username `ash`, password `12345` (frontend demo gate only).
 
 ## Deploy (Render)
 
